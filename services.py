@@ -1,4 +1,3 @@
-# services.py
 from __future__ import annotations
 
 import os
@@ -29,7 +28,7 @@ class Services:
             os.environ.get("CATEGORIES_TTL_SECONDS", "21600")
         )
 
-        self._timeout = aiohttp.ClientTimeout(total=10)
+        self._timeout = aiohttp.ClientTimeout(total=12)
 
     async def start(self) -> None:
         if self._session is None or self._session.closed:
@@ -59,12 +58,19 @@ class Services:
             json={"callback_query_id": callback_id},
         )
 
-    async def post_google(self, payload: Dict[str, Any]) -> None:
-        await self.session.post(self.api_url, json=payload)
+    async def post_google(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        async with self.session.post(self.api_url, json=payload) as r:
+            try:
+                return await r.json()
+            except Exception:
+                return {"ok": False, "status": r.status}
 
     async def check_google(self, params: Dict[str, Any]) -> Dict[str, Any]:
         async with self.session.get(self.api_url, params=params) as r:
-            return await r.json()
+            try:
+                return await r.json()
+            except Exception:
+                return {"encontrado": False, "status": r.status}
 
     async def get_categories(self) -> List[str]:
         now = time.time()
