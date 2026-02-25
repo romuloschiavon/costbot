@@ -1,0 +1,16 @@
+services:
+  - name: jarvis-bot
+    type: web
+    runtime: python
+
+    build:
+      commands:
+        - curl -LsSf https://astral.sh/uv/install.sh | sh
+        - ~/.local/bin/uv sync
+
+    run:
+      command: ~/.local/bin/uv run uvicorn main:app --host 0.0.0.0 --port 8000
+
+    ports:
+      - port: 8000
+        protocol: http
